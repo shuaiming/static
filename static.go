@@ -24,24 +24,24 @@ func New(prefix string, fs http.FileSystem, index bool) *Static {
 
 // ServeHTTP implement pod.Handler
 func (s *Static) ServeHTTP(
-	rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 
 	if !strings.HasPrefix(r.URL.Path, s.Prefix) {
-		next(rw, r)
+		next(w, r)
 		return
 	}
 
 	// do not list dir when needed
 	if !s.Index && strings.HasSuffix(r.URL.Path, "/") {
-		http.Error(rw, "403 Forbidden", http.StatusForbidden)
+		http.Error(w, "403 Forbidden", http.StatusForbidden)
 		return
 	}
 
 	// fix http.StripPrefix dirList() bug
 	if r.URL.Path == s.Prefix && !strings.HasSuffix(r.URL.Path, "/") {
-		http.Redirect(rw, r, r.URL.Path+"/", http.StatusMovedPermanently)
+		http.Redirect(w, r, r.URL.Path+"/", http.StatusMovedPermanently)
 		return
 	}
 
-	http.StripPrefix(s.Prefix, http.FileServer(s.Dir)).ServeHTTP(rw, r)
+	http.StripPrefix(s.Prefix, http.FileServer(s.Dir)).ServeHTTP(w, r)
 }
